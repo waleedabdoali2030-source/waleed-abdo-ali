@@ -128,7 +128,7 @@ export function AdminDashboard() {
       return;
     }
 
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file: File) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImages(prev => [...prev, reader.result as string]);
