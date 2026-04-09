@@ -1,0 +1,188 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: projects
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string (required, max 100 chars)
+    //   - description: string (required, max 2000 chars)
+    //   - images: list of strings (required, max 10 images, valid URLs)
+    //   - price: number (required, >= 0)
+    //   - quantity: number (required, >= 0)
+    //   - viewCount: number (required, >= 0)
+    //   - starCount: number (required, >= 0)
+    //   - createdAt: string (required, ISO 8601)
+    //   - ownerId: string (required)
+    //
+    // Collection: comments
+    // Document ID: auto-generated
+    // Fields:
+    //   - projectId: string (required)
+    //   - text: string (required, max 500 chars)
+    //   - authorName: string (required, max 50 chars)
+    //   - createdAt: string (required, ISO 8601)
+    //
+    // Collection: site_stats
+    // Document ID: 'global'
+    // Fields:
+    //   - totalVisits: number (required, >= 0)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // The owner email is waleedabdoali2030@gmail.com
+      return isAuthenticated() && request.auth.token.email == "waleedabdoali2030@gmail.com" && request.auth.token.email_verified == true;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isValidString(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+             request.resource.data[field].size() >= minLen &&
+             request.resource.data[field].size() <= maxLen;
+    }
+
+    function isValidNumber(field, minVal) {
+      return request.resource.data[field] is number && request.resource.data[field] >= minVal;
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function isValidImageList(listField, maxSize) {
+      let list = request.resource.data[listField];
+      return list is list && list.size() <= maxSize;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidProject() {
+      return hasOnlyAllowedFields(['name', 'description', 'images', 'price', 'quantity', 'viewCount', 'starCount', 'createdAt', 'ownerId']) &&
+             hasRequiredFields(['name', 'description', 'images', 'price', 'quantity', 'viewCount', 'starCount', 'createdAt', 'ownerId']) &&
+             isValidString('name', 1, 100) &&
+             isValidString('description', 1, 2000) &&
+             isValidImageList('images', 10) &&
+             isValidNumber('price', 0) &&
+             isValidNumber('quantity', 0) &&
+             isValidNumber('viewCount', 0) &&
+             isValidNumber('starCount', 0) &&
+             isValidDateString(request.resource.data.createdAt) &&
+             request.resource.data.ownerId == request.auth.uid;
+    }
+
+    function isValidComment() {
+      return hasOnlyAllowedFields(['projectId', 'text', 'authorName', 'createdAt']) &&
+             hasRequiredFields(['projectId', 'text', 'authorName', 'createdAt']) &&
+             isValidString('projectId', 1, 100) &&
+             isValidString('text', 1, 500) &&
+             isValidString('authorName', 1, 50) &&
+             isValidDateString(request.resource.data.createdAt);
+    }
+
+    function isValidSiteStat() {
+      return hasOnlyAllowedFields(['totalVisits']) &&
+             hasRequiredFields(['totalVisits']) &&
+             isValidNumber('totalVisits', 0);
+    }
+
+    function isValidInquiry() {
+      return hasOnlyAllowedFields(['projectId', 'projectName', 'userName', 'userEmail', 'message', 'createdAt']) &&
+             hasRequiredFields(['projectId', 'projectName', 'userName', 'message', 'createdAt']) &&
+             isValidString('projectId', 1, 100) &&
+             isValidString('projectName', 1, 100) &&
+             isValidString('userName', 1, 100) &&
+             isValidString('message', 1, 2000) &&
+             isValidDateString(request.resource.data.createdAt);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /inquiries/{inquiryId} {
+      // Only admin can read inquiries
+      allow read: if isAdmin();
+      // Anyone can create an inquiry
+      allow create: if isValidInquiry();
+      allow update, delete: if false;
+    }
+
+    match /projects/{projectId} {
+      // Anyone can read projects
+      allow read: if true;
+
+      // Only admin can create or delete projects
+      allow create: if isAdmin() && isValidProject();
+      allow delete: if isAdmin();
+
+      // Admin can update everything.
+      // Public can ONLY increment viewCount or starCount.
+      allow update: if (isAdmin() && isValidProject()) || 
+                    (
+                      // Public incrementing viewCount or starCount
+                      request.resource.data.diff(resource.data).affectedKeys().hasAny(['viewCount', 'starCount']) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'starCount']) &&
+                      (
+                        (request.resource.data.viewCount == resource.data.viewCount + 1) || 
+                        (request.resource.data.viewCount == resource.data.viewCount)
+                      ) &&
+                      (
+                        (request.resource.data.starCount == resource.data.starCount + 1) || 
+                        (request.resource.data.starCount == resource.data.starCount)
+                      )
+                    );
+    }
+
+    match /comments/{commentId} {
+      // Anyone can read comments
+      allow read: if true;
+
+      // Anyone can create a comment (we will enforce a simple name/text in UI, no auth strictly required for commenting to lower friction, but we validate length)
+      allow create: if isValidComment();
+      
+      // Only admin can delete comments
+      allow delete: if isAdmin();
+      allow update: if false; // Comments are immutable
+    }
+
+    match /site_stats/{statId} {
+      // Anyone can read stats
+      allow read: if true;
+
+      // Admin can create the initial stat document
+      allow create: if isAdmin() && isValidSiteStat();
+
+      // Anyone can increment totalVisits by 1
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalVisits']) &&
+                       request.resource.data.totalVisits == resource.data.totalVisits + 1;
+    }
+  }
+}

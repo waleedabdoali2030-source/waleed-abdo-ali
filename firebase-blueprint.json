@@ -1,0 +1,123 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "A project or product for sale.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the project."
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": "Array of image URLs."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the project."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Available quantity."
+        },
+        "viewCount": {
+          "type": "number",
+          "description": "Number of times the project was viewed."
+        },
+        "starCount": {
+          "type": "number",
+          "description": "Number of stars/likes."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ownerId": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "description", "images", "price", "quantity", "viewCount", "starCount", "createdAt", "ownerId"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A user comment on a project.",
+      "type": "object",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "authorName": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["projectId", "text", "authorName", "createdAt"]
+    },
+    "SiteStat": {
+      "title": "SiteStat",
+      "description": "Global site statistics.",
+      "type": "object",
+      "properties": {
+        "totalVisits": {
+          "type": "number"
+        }
+      },
+      "required": ["totalVisits"]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "A user inquiry about a project.",
+      "type": "object",
+      "properties": {
+        "projectId": { "type": "string" },
+        "projectName": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "message": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["projectId", "projectName", "userName", "message", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": {
+        "$ref": "#/entities/Project"
+      },
+      "description": "Stores all projects."
+    },
+    "/comments/{commentId}": {
+      "schema": {
+        "$ref": "#/entities/Comment"
+      },
+      "description": "Stores all comments."
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": {
+        "$ref": "#/entities/Inquiry"
+      },
+      "description": "Stores user inquiries."
+    },
+    "/site_stats/{statId}": {
+      "schema": {
+        "$ref": "#/entities/SiteStat"
+      },
+      "description": "Stores global site statistics."
+    }
+  }
+}

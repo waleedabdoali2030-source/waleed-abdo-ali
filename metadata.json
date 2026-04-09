@@ -1,0 +1,5 @@
+{
+  "name": "Arabic Project Gallery",
+  "description": "A gallery system to sell projects with images in Arabic, featuring CRUD for the owner, and views, comments, and WhatsApp contact for users.",
+  "requestFramePermissions": []
+}
