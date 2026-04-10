@@ -298,7 +298,7 @@ export function AdminDashboard() {
                       <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                         <UploadCloud className="w-10 h-10 text-gray-400 mx-auto mb-3" />
                         <p className="text-sm text-gray-600 font-medium">اضغط هنا لاختيار الصور من جهازك</p>
-                        <p className="text-xs text-gray-400 mt-1">يمكنك اختيار أكثر من صورة (JPG, PNG)</p>
+                        <p className="text-xs text-gray-400 mt-1">يمكنك اختيار أكثر من صورة معاً (حدد عدة صور أو اسحبها هنا)</p>
                         <input 
                           type="file" 
                           ref={fileInputRef}

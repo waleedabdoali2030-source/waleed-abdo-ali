@@ -7,7 +7,7 @@ import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Eye, Star, MessageCircle, Send, Phone, Mail, ShoppingCart, ShieldCheck, Truck } from 'lucide-react';
+import { Eye, Star, MessageCircle, Send, Phone, Mail, ShoppingCart, ShieldCheck, Truck, ChevronRight, ChevronLeft } from 'lucide-react';
 import { db, isFirebaseConfigured } from '../lib/firebase';
 import { doc, updateDoc, increment, collection, addDoc, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../lib/AuthContext';
@@ -183,6 +183,18 @@ export function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
 
   const whatsappLink = `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(`مرحباً، أريد شراء: ${project.name}\nالسعر: ${project.price} ريال`)}`;
 
+  const handleNextImage = () => {
+    if (project.images && project.images.length > 0) {
+      setCurrentImageIdx((prev) => (prev + 1) % project.images!.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (project.images && project.images.length > 0) {
+      setCurrentImageIdx((prev) => (prev - 1 + project.images!.length) % project.images!.length);
+    }
+  };
+
   const displayViewCount = isFirebaseConfigured ? project.viewCount + 1 : localViewCount;
   const displayStarCount = isFirebaseConfigured ? project.starCount + (hasStarred ? 1 : 0) : localStarCount;
 
@@ -194,14 +206,35 @@ export function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
           
           {/* 1. Images Section (Top Right on Desktop, Top on Mobile) */}
           <div className="lg:col-span-7 bg-white p-6 md:p-8 border-b lg:border-b-0 border-gray-100">
-            <div className="aspect-square md:aspect-[4/3] relative overflow-hidden rounded-2xl bg-gray-50 border border-gray-100 mb-4">
+            <div className="aspect-square md:aspect-[4/3] relative overflow-hidden rounded-2xl bg-gray-100 border border-gray-200 mb-4 group shadow-inner">
               {project.images && project.images.length > 0 ? (
-                <img 
-                  src={project.images[currentImageIdx]} 
-                  alt={project.name} 
-                  className="object-contain w-full h-full"
-                  referrerPolicy="no-referrer"
-                />
+                <>
+                  <img 
+                    src={project.images[currentImageIdx]} 
+                    alt={project.name} 
+                    className="object-contain w-full h-full transition-opacity duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                  {project.images.length > 1 && (
+                    <>
+                      <button 
+                        onClick={handlePrevImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0 text-gray-800 hover:text-primary"
+                      >
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+                      <button 
+                        onClick={handleNextImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/80 hover:bg-white backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all transform -translate-x-4 group-hover:translate-x-0 text-gray-800 hover:text-primary"
+                      >
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-sm font-medium tracking-widest">
+                        {currentImageIdx + 1} / {project.images.length}
+                      </div>
+                    </>
+                  )}
+                </>
               ) : (
                 <div className="flex items-center justify-center w-full h-full text-gray-400">
                   لا توجد صورة
@@ -210,12 +243,12 @@ export function ProjectModal({ project, isOpen, onClose }: ProjectModalProps) {
             </div>
             
             {project.images && project.images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex gap-3 overflow-x-auto pb-4 pt-2 scrollbar-hide snap-x">
                 {project.images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIdx(idx)}
-                    className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all ${currentImageIdx === idx ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 opacity-60 hover:opacity-100'}`}
+                    className={`flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border-2 transition-all duration-300 snap-center ${currentImageIdx === idx ? 'border-primary ring-4 ring-primary/20 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}`}
                   >
                     <img src={img} alt="" className="object-cover w-full h-full" referrerPolicy="no-referrer" />
                   </button>
