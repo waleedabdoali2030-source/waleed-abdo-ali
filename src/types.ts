@@ -37,4 +37,8 @@ export interface Inquiry {
 export interface SiteSettings {
   whatsappNumber: string;
   contactMessage: string;
+  storeName?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroBackgroundImage?: string;
 }

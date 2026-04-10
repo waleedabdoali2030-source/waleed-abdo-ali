@@ -41,13 +41,22 @@ export function AdminDashboard() {
   // Settings state
   const [whatsappNumber, setWhatsappNumber] = useState(settings.whatsappNumber);
   const [contactMessage, setContactMessage] = useState(settings.contactMessage);
+  const [storeName, setStoreName] = useState(settings.storeName || 'متجري');
+  const [heroTitle, setHeroTitle] = useState(settings.heroTitle || 'اكتشف أحدث المنتجات والمشاريع');
+  const [heroSubtitle, setHeroSubtitle] = useState(settings.heroSubtitle || 'تصفح مجموعتنا المميزة من المنتجات المختارة بعناية. تسوق الآن واستمتع بتجربة شراء فريدة ومباشرة.');
+  const [heroBackgroundImage, setHeroBackgroundImage] = useState(settings.heroBackgroundImage || '');
   const [isSettingsSaved, setIsSettingsSaved] = useState(false);
+  const heroImageInputRef = useRef<HTMLInputElement>(null);
 
   const displayProjects = isLocalMode ? localProjects : hookProjects;
 
   useEffect(() => {
     setWhatsappNumber(settings.whatsappNumber);
     setContactMessage(settings.contactMessage);
+    setStoreName(settings.storeName || 'متجري');
+    setHeroTitle(settings.heroTitle || 'اكتشف أحدث المنتجات والمشاريع');
+    setHeroSubtitle(settings.heroSubtitle || 'تصفح مجموعتنا المميزة من المنتجات المختارة بعناية. تسوق الآن واستمتع بتجربة شراء فريدة ومباشرة.');
+    setHeroBackgroundImage(settings.heroBackgroundImage || '');
   }, [settings]);
 
   useEffect(() => {
@@ -208,10 +217,27 @@ export function AdminDashboard() {
     e.preventDefault();
     saveSettings({
       whatsappNumber,
-      contactMessage
+      contactMessage,
+      storeName,
+      heroTitle,
+      heroSubtitle,
+      heroBackgroundImage
     });
     setIsSettingsSaved(true);
     setTimeout(() => setIsSettingsSaved(false), 3000);
+  };
+
+  const handleHeroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setHeroBackgroundImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    if (heroImageInputRef.current) heroImageInputRef.current.value = '';
   };
 
   return (
@@ -441,30 +467,104 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSaveSettings} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="whatsapp" className="text-base font-medium">رقم الواتساب (لاستقبال الطلبات)</Label>
-                <Input 
-                  id="whatsapp" 
-                  value={whatsappNumber} 
-                  onChange={(e) => setWhatsappNumber(e.target.value)} 
-                  placeholder="مثال: 966500000000"
-                  required 
-                  className="h-11 text-left"
-                  dir="ltr"
-                />
-                <p className="text-xs text-gray-500">سيتم توجيه العملاء لهذا الرقم عند الضغط على زر الشراء أو التواصل.</p>
+              <div className="space-y-4 border-b pb-6">
+                <h3 className="text-lg font-bold text-gray-900">الهوية البصرية للمتجر</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="storeName" className="text-base font-medium">اسم المتجر</Label>
+                  <Input 
+                    id="storeName" 
+                    value={storeName} 
+                    onChange={(e) => setStoreName(e.target.value)} 
+                    placeholder="مثال: متجري"
+                    required 
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="heroTitle" className="text-base font-medium">العنوان الرئيسي (في أعلى الصفحة)</Label>
+                  <Input 
+                    id="heroTitle" 
+                    value={heroTitle} 
+                    onChange={(e) => setHeroTitle(e.target.value)} 
+                    placeholder="مثال: اكتشف أحدث المنتجات"
+                    required 
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="heroSubtitle" className="text-base font-medium">الوصف الفرعي</Label>
+                  <Textarea 
+                    id="heroSubtitle" 
+                    rows={2} 
+                    value={heroSubtitle} 
+                    onChange={(e) => setHeroSubtitle(e.target.value)} 
+                    required 
+                    className="resize-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-base font-medium">صورة الخلفية (اختياري)</Label>
+                  <div className="flex items-center gap-4">
+                    {heroBackgroundImage && (
+                      <div className="relative w-24 h-16 rounded-lg overflow-hidden border border-gray-200">
+                        <img src={heroBackgroundImage} alt="Background" className="w-full h-full object-cover" />
+                        <button 
+                          type="button"
+                          onClick={() => setHeroBackgroundImage('')}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => heroImageInputRef.current?.click()}
+                      className="gap-2"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      {heroBackgroundImage ? 'تغيير الصورة' : 'اختيار صورة'}
+                    </Button>
+                    <input 
+                      type="file" 
+                      ref={heroImageInputRef}
+                      onChange={handleHeroImageUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">صورة تظهر كخلفية للقسم العلوي في الصفحة الرئيسية لجذب الزبائن.</p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="contactMessage" className="text-base font-medium">رسالة الشراء/التواصل</Label>
-                <Textarea 
-                  id="contactMessage" 
-                  rows={3} 
-                  value={contactMessage} 
-                  onChange={(e) => setContactMessage(e.target.value)} 
-                  required 
-                  className="resize-none"
-                />
-                <p className="text-xs text-gray-500">النص الذي يظهر للعملاء لتشجيعهم على إتمام عملية الشراء.</p>
+
+              <div className="space-y-4 pt-2">
+                <h3 className="text-lg font-bold text-gray-900">إعدادات التواصل</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp" className="text-base font-medium">رقم الواتساب (لاستقبال الطلبات)</Label>
+                  <Input 
+                    id="whatsapp" 
+                    value={whatsappNumber} 
+                    onChange={(e) => setWhatsappNumber(e.target.value)} 
+                    placeholder="مثال: 966500000000"
+                    required 
+                    className="h-11 text-left"
+                    dir="ltr"
+                  />
+                  <p className="text-xs text-gray-500">سيتم توجيه العملاء لهذا الرقم عند الضغط على زر الشراء أو التواصل.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contactMessage" className="text-base font-medium">رسالة الشراء/التواصل</Label>
+                  <Textarea 
+                    id="contactMessage" 
+                    rows={3} 
+                    value={contactMessage} 
+                    onChange={(e) => setContactMessage(e.target.value)} 
+                    required 
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-gray-500">النص الذي يظهر للعملاء لتشجيعهم على إتمام عملية الشراء.</p>
+                </div>
               </div>
               <div className="flex items-center gap-4 pt-4 border-t">
                 <Button type="submit" className="px-8">

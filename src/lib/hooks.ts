@@ -11,7 +11,11 @@ const LS_SETTINGS_KEY = 'gallery_settings';
 export function useSettings() {
   const [settings, setSettings] = useState<SiteSettings>({
     whatsappNumber: '966500000000',
-    contactMessage: 'يمكنك التواصل مباشرة مع صاحب المشروع عبر الواتساب للاستفسار السريع أو الشراء.'
+    contactMessage: 'يمكنك التواصل مباشرة مع صاحب المشروع عبر الواتساب للاستفسار السريع أو الشراء.',
+    storeName: 'متجري',
+    heroTitle: 'اكتشف أحدث المنتجات والمشاريع',
+    heroSubtitle: 'تصفح مجموعتنا المميزة من المنتجات المختارة بعناية. تسوق الآن واستمتع بتجربة شراء فريدة ومباشرة.',
+    heroBackgroundImage: ''
   });
 
   useEffect(() => {

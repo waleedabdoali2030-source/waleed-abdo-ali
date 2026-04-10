@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useProjects, useSiteStats } from '../lib/hooks';
+import { useProjects, useSiteStats, useSettings } from '../lib/hooks';
 import { ProjectCard } from './ProjectCard';
 import { Users, Search, ShoppingBag } from 'lucide-react';
 import { Input } from './ui/input';
@@ -10,6 +10,7 @@ import { motion } from 'motion/react';
 export function Gallery() {
   const { projects, loading } = useProjects();
   const { stats } = useSiteStats();
+  const { settings } = useSettings();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredProjects = useMemo(() => {
@@ -36,21 +37,36 @@ export function Gallery() {
       className="space-y-12"
     >
       {/* Storefront Hero Header */}
-      <div className="relative bg-gradient-to-br from-primary/5 via-primary/10 to-transparent rounded-3xl p-8 md:p-12 overflow-hidden border border-primary/10">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+      <div 
+        className={`relative rounded-3xl p-8 md:p-12 overflow-hidden border border-primary/10 min-h-[400px] flex items-center ${settings.heroBackgroundImage ? '' : 'bg-gradient-to-br from-primary/5 via-primary/10 to-transparent'}`}
+        style={settings.heroBackgroundImage ? {
+          backgroundImage: `url(${settings.heroBackgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        } : {}}
+      >
+        {settings.heroBackgroundImage && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm z-0"></div>
+        )}
         
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+        {!settings.heroBackgroundImage && (
+          <>
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+          </>
+        )}
+        
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8 w-full">
           <div className="flex-1 space-y-6 text-center md:text-right">
             <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-primary font-medium text-sm shadow-sm border border-primary/10">
               <ShoppingBag className="w-4 h-4" />
               <span>متجرك المفضل للتسوق</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
-              اكتشف أحدث <span className="text-primary">المنتجات</span> والمشاريع
+              {settings.heroTitle || 'اكتشف أحدث المنتجات والمشاريع'}
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl leading-relaxed">
-              تصفح مجموعتنا المميزة من المنتجات المختارة بعناية. تسوق الآن واستمتع بتجربة شراء فريدة ومباشرة.
+            <p className="text-lg text-gray-800 font-medium max-w-2xl leading-relaxed">
+              {settings.heroSubtitle || 'تصفح مجموعتنا المميزة من المنتجات المختارة بعناية. تسوق الآن واستمتع بتجربة شراء فريدة ومباشرة.'}
             </p>
             
             <div className="relative max-w-xl w-full mx-auto md:mx-0 mt-8">

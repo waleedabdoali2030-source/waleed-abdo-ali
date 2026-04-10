@@ -10,8 +10,11 @@ import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { Store, Settings, LogIn, LogOut } from 'lucide-react';
 
+import { useSettings } from './lib/hooks';
+
 function Navigation() {
   const { user, isAdmin, isLocalAdmin, loginLocalAdmin, logoutLocalAdmin } = useAuth();
+  const { settings } = useSettings();
   const isLocalMode = !isFirebaseConfigured;
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [username, setUsername] = useState('');
@@ -48,7 +51,7 @@ function Navigation() {
                 <Store className="w-7 h-7" />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-gray-900 group-hover:text-primary transition-colors">متجري</h1>
+                <h1 className="text-2xl font-black text-gray-900 group-hover:text-primary transition-colors">{settings.storeName || 'متجري'}</h1>
                 <p className="text-xs text-gray-500 font-medium">أفضل المنتجات بأفضل الأسعار</p>
               </div>
             </Link>
